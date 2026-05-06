@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>기업 에이전트 개발 가이드 | 실패를 줄이는 엔터프라이즈 AI Agent 운영 설계</title>
+  <meta name="description" content="기업용 AI 에이전트 개발 시 자주 실패하는 지점, 주의해야 할 리스크, 설계·운영·거버넌스 체크리스트를 정리한 HTML 가이드" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="orb orb-blue"></div>
+  <div class="orb orb-cyan"></div>
+  <div class="orb orb-violet"></div>
+
+  <header class="hero shell">
+    <nav class="topbar glass" aria-label="문서 내비게이션">
+      <div class="brandmark" aria-label="Enterprise Agent Guide">
+        <span class="brand-dot"></span>
+        <span>Enterprise Agent Guide</span>
+      </div>
+      <div class="navlinks">
+        <a href="#failures">실패 패턴</a>
+        <a href="#blueprint">설계 원칙</a>
+        <a href="#governance">거버넌스</a>
+        <a href="#checklist">체크리스트</a>
+      </div>
+    </nav>
+
+    <section class="hero-card glass-strong">
+      <div class="eyebrow">AI Agent · Enterprise Delivery · Governance</div>
+      <h1>기업 에이전트 개발 가이드</h1>
+      <p class="hero-subtitle">“데모는 됐는데 운영은 안 되는” 문제를 피하기 위한 실패 패턴, 설계 원칙, 통제 구조, 실행 체크리스트</p>
+      <div class="hero-actions">
+        <a class="button primary" href="#checklist">바로 체크리스트 보기</a>
+        <a class="button secondary" href="#sources">근거/출처 보기</a>
+      </div>
+      <div class="metric-row" role="list" aria-label="핵심 요약">
+        <div class="metric" role="listitem"><b>12</b><span>대표 실패 패턴</span></div>
+        <div class="metric" role="listitem"><b>7</b><span>설계 게이트</span></div>
+        <div class="metric" role="listitem"><b>4</b><span>운영 통제 축</span></div>
+        <div class="metric" role="listitem"><b>30+</b><span>실행 체크포인트</span></div>
+      </div>
+    </section>
+  </header>
+
+  <main>
+    <section class="shell intro-grid">
+      <article class="glass card span-7">
+        <p class="section-kicker">Executive Summary</p>
+        <h2>기업 에이전트의 실패는 모델 성능보다 <em>업무 구조화와 운영 설계</em>에서 더 자주 발생합니다.</h2>
+        <p>요즘IT의 콘텐츠 AX 실험기 흐름은 “짧은 시간에 결과물을 만드는 자동화”, “프롬프트보다 파일과 컨텍스트를 중시하는 작업 방식”, “두 달간 기업용 에이전트를 만들며 배운 시행착오”라는 세 단계로 읽을 수 있습니다. 기업 적용에서는 여기에 보안, 권한, 책임소재, 비용, 관측성, 변경관리까지 붙습니다.</p>
+        <p>따라서 에이전트 개발은 단순히 “LLM + Tool”을 붙이는 일이 아니라, <strong>업무 단위의 입력·출력·권한·검증·승인·로그</strong>를 설계하는 운영 시스템 구축에 가깝습니다.</p>
+      </article>
+      <aside class="glass card span-5 quick-read">
+        <p class="section-kicker">3초 요약</p>
+        <ul>
+          <li><strong>프롬프트보다 컨텍스트:</strong> 파일, 데이터, 정책, 예외 케이스가 품질을 좌우합니다.</li>
+          <li><strong>자율성보다 통제:</strong> 업무별 권한과 human-in-the-loop가 먼저입니다.</li>
+          <li><strong>PoC보다 운영:</strong> 관측성, 비용, 보안, 버전관리가 없으면 확산이 막힙니다.</li>
+          <li><strong>멀티에이전트보다 책임:</strong> 누가 무엇을 결정하고 검증하는지 명확해야 합니다.</li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="shell" id="failures">
+      <div class="section-heading">
+        <p class="section-kicker">Failure Map</p>
+        <h2>기업 에이전트 개발 시 자주 실패하는 12가지</h2>
+        <p>실패는 대부분 “모델이 멍청해서”가 아니라, 목적·데이터·권한·검증·운영이 분리되어 설계되지 않았기 때문에 발생합니다.</p>
+      </div>
+      <div class="failure-grid">
+        <article class="failure-card glass"><span>01</span><h3>프롬프트 만능주의</h3><p>업무 지식, 샘플 파일, 제약조건 없이 프롬프트 문장만 개선하려고 합니다.</p></article>
+        <article class="failure-card glass"><span>02</span><h3>업무 범위 과대 설정</h3><p>처음부터 “모든 업무를 처리하는 에이전트”를 만들려다 검증 범위가 폭발합니다.</p></article>
+        <article class="failure-card glass"><span>03</span><h3>도구 권한 과다 부여</h3><p>읽기·쓰기·삭제·전송 권한을 분리하지 않아 사고 반경이 커집니다.</p></article>
+        <article class="failure-card glass"><span>04</span><h3>파일/컨텍스트 관리 부재</h3><p>참조 문서 버전, 최신성, 우선순위가 없어서 매번 다른 답이 나옵니다.</p></article>
+        <article class="failure-card glass"><span>05</span><h3>검증 없는 자동 실행</h3><p>결과 품질을 확인하기 전에 외부 시스템에 반영하거나 고객에게 전송합니다.</p></article>
+        <article class="failure-card glass"><span>06</span><h3>로그와 재현성 부족</h3><p>왜 그런 결론을 냈는지, 어떤 파일과 도구를 썼는지 추적할 수 없습니다.</p></article>
+        <article class="failure-card glass"><span>07</span><h3>멀티에이전트 환상</h3><p>역할 분리 없이 에이전트 수만 늘려 비용과 지연만 증가합니다.</p></article>
+        <article class="failure-card glass"><span>08</span><h3>예외 처리 미흡</h3><p>데이터 없음, API 실패, 권한 없음, 상충 정책 등 현실 예외를 설계하지 않습니다.</p></article>
+        <article class="failure-card glass"><span>09</span><h3>보안/컴플라이언스 후순위</h3><p>개인정보, 고객 데이터, 내부 기밀 처리 기준을 PoC 이후로 미룹니다.</p></article>
+        <article class="failure-card glass"><span>10</span><h3>비용 모델 부재</h3><p>토큰, 검색, 도구 호출, 재시도, 이미지/파일 처리 비용을 측정하지 않습니다.</p></article>
+        <article class="failure-card glass"><span>11</span><h3>사용자 경험 단절</h3><p>에이전트가 잘한 일과 사람이 해야 할 일을 화면·알림·승인 흐름으로 구분하지 않습니다.</p></article>
+        <article class="failure-card glass"><span>12</span><h3>운영 소유자 불명확</h3><p>모델, 데이터, 정책, 장애, 비용, 품질을 누가 책임지는지 정의하지 않습니다.</p></article>
+      </div>
+    </section>
+
+    <section class="shell diagram-section" id="blueprint">
+      <div class="section-heading">
+        <p class="section-kicker">Reference Architecture</p>
+        <h2>기업형 에이전트는 “업무 오케스트레이션 시스템”으로 설계해야 합니다</h2>
+      </div>
+      <div class="glass diagram-card">
+        <svg class="architecture" viewBox="0 0 1200 680" role="img" aria-label="기업 에이전트 참조 아키텍처 다이어그램">
+          <defs>
+            <linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#0f62fe"/><stop offset="1" stop-color="#33b1ff"/></linearGradient>
+            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#001d6c" flood-opacity="0.18"/></filter>
+          </defs>
+          <rect x="30" y="30" width="1140" height="620" rx="34" fill="rgba(255,255,255,.58)" stroke="rgba(15,98,254,.25)"/>
+          <text x="70" y="82" class="svg-title">Enterprise Agent Control Plane</text>
+          <text x="70" y="112" class="svg-note">업무 목표 · 데이터 · 도구 · 권한 · 검증 · 관측성을 한 흐름으로 관리</text>
+
+          <g filter="url(#shadow)">
+            <rect x="70" y="160" width="210" height="110" rx="18" fill="#ffffff" stroke="#d0e2ff"/>
+            <text x="94" y="198" class="svg-head">업무 요청</text>
+            <text x="94" y="228" class="svg-body">사용자, 채널, 양식</text>
+            <text x="94" y="252" class="svg-body">목표/제약/승인자</text>
+          </g>
+          <path d="M280 215 H370" class="arrow"/>
+          <g filter="url(#shadow)">
+            <rect x="370" y="135" width="230" height="160" rx="18" fill="#ffffff" stroke="#d0e2ff"/>
+            <text x="394" y="174" class="svg-head">컨텍스트 허브</text>
+            <text x="394" y="207" class="svg-body">파일 · RAG · 정책</text>
+            <text x="394" y="231" class="svg-body">샘플 · 메모리 · 이력</text>
+            <text x="394" y="255" class="svg-body">최신성/우선순위</text>
+          </g>
+          <path d="M600 215 H690" class="arrow"/>
+          <g filter="url(#shadow)">
+            <rect x="690" y="135" width="230" height="160" rx="18" fill="#ffffff" stroke="#d0e2ff"/>
+            <text x="714" y="174" class="svg-head">에이전트 런타임</text>
+            <text x="714" y="207" class="svg-body">Planner · Executor</text>
+            <text x="714" y="231" class="svg-body">Tool Router</text>
+            <text x="714" y="255" class="svg-body">Guardrail</text>
+          </g>
+          <path d="M920 215 H1010" class="arrow"/>
+          <g filter="url(#shadow)">
+            <rect x="1010" y="160" width="120" height="110" rx="18" fill="url(#g1)"/>
+            <text x="1035" y="203" class="svg-head white">업무 결과</text>
+            <text x="1035" y="233" class="svg-body white">초안·실행·보고</text>
+          </g>
+
+          <g>
+            <rect x="180" y="400" width="210" height="110" rx="18" fill="#edf5ff" stroke="#78a9ff"/>
+            <text x="205" y="438" class="svg-head">권한/보안</text>
+            <text x="205" y="468" class="svg-body">읽기·쓰기·전송 분리</text>
+          </g>
+          <g>
+            <rect x="490" y="400" width="210" height="110" rx="18" fill="#f4f4f4" stroke="#a8a8a8"/>
+            <text x="515" y="438" class="svg-head">검증/승인</text>
+            <text x="515" y="468" class="svg-body">품질 게이트 · HITL</text>
+          </g>
+          <g>
+            <rect x="800" y="400" width="210" height="110" rx="18" fill="#e5f6ff" stroke="#33b1ff"/>
+            <text x="825" y="438" class="svg-head">관측/비용</text>
+            <text x="825" y="468" class="svg-body">로그 · 평가 · 토큰</text>
+          </g>
+          <path d="M485 295 V350 H285 V400" class="thin"/>
+          <path d="M805 295 V350 H595 V400" class="thin"/>
+          <path d="M805 295 V350 H905 V400" class="thin"/>
+        </svg>
+      </div>
+    </section>
+
+    <section class="shell principles">
+      <div class="section-heading">
+        <p class="section-kicker">Design Gates</p>
+        <h2>개발 전에 반드시 통과해야 할 7개 설계 게이트</h2>
+      </div>
+      <div class="gate-list">
+        <article class="glass gate"><b>Gate 1</b><h3>업무 단위 정의</h3><p>“무엇을 자동화할지”가 아니라, 입력·판단·출력·승인·예외가 명확한 단위 업무를 고릅니다.</p></article>
+        <article class="glass gate"><b>Gate 2</b><h3>컨텍스트 패키징</h3><p>프롬프트보다 업무 파일, 샘플, 정책, 금지사항, 기준 답안을 버전 관리합니다.</p></article>
+        <article class="glass gate"><b>Gate 3</b><h3>도구 권한 분리</h3><p>조회, 생성, 수정, 삭제, 외부 전송 권한을 다른 레벨로 나누고 기본값은 최소 권한으로 둡니다.</p></article>
+        <article class="glass gate"><b>Gate 4</b><h3>검증 기준 설계</h3><p>정확성, 최신성, 정책 준수, 개인정보, 금액/수치, 출처 확인 기준을 자동/수동으로 나눕니다.</p></article>
+        <article class="glass gate"><b>Gate 5</b><h3>Human-in-the-loop</h3><p>고위험 액션, 외부 발송, 데이터 변경, 비용 초과는 사람 승인 없이는 실행하지 않습니다.</p></article>
+        <article class="glass gate"><b>Gate 6</b><h3>관측성과 재현성</h3><p>입력, 검색 문서, 도구 호출, 모델 응답, 최종 산출물, 승인 이력을 남깁니다.</p></article>
+        <article class="glass gate"><b>Gate 7</b><h3>운영 소유권</h3><p>비즈니스 Owner, Data Owner, Security Owner, Platform Owner를 사전에 지정합니다.</p></article>
+      </div>
+    </section>
+
+    <section class="shell matrix-section" id="governance">
+      <div class="section-heading">
+        <p class="section-kicker">Risk × Control Matrix</p>
+        <h2>주의해야 하는 것: 위험을 통제 항목으로 바꿔야 합니다</h2>
+      </div>
+      <div class="glass table-wrap">
+        <table>
+          <thead><tr><th>리스크</th><th>실패 징후</th><th>통제 방법</th><th>필수 산출물</th></tr></thead>
+          <tbody>
+            <tr><td>환각/부정확</td><td>그럴듯하지만 출처 없는 답</td><td>근거 문서 링크, 수치 검증, confidence 표시</td><td>평가셋, 기준 답안</td></tr>
+            <tr><td>권한 오남용</td><td>불필요한 쓰기/전송 실행</td><td>권한 레벨, 승인 게이트, dry-run</td><td>권한 매트릭스</td></tr>
+            <tr><td>데이터 유출</td><td>외부 API에 민감정보 전달</td><td>마스킹, DLP, 허용 도메인, 로그 redaction</td><td>데이터 분류표</td></tr>
+            <tr><td>비용 폭증</td><td>반복 재시도, 긴 컨텍스트, 과도한 멀티에이전트</td><td>토큰 예산, 캐시, 조기 중단, 모델 라우팅</td><td>비용 대시보드</td></tr>
+            <tr><td>운영 불가</td><td>장애 원인 추적 불가</td><td>trace id, tool log, version pinning</td><td>Runbook, 로그 스키마</td></tr>
+            <tr><td>사용자 불신</td><td>결과가 매번 다르고 수정이 어려움</td><td>초안/근거/수정 포인트 분리 UI</td><td>UX 플로우</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="shell roadmap">
+      <div class="section-heading">
+        <p class="section-kicker">Implementation Roadmap</p>
+        <h2>PoC에서 Production으로 가는 현실적인 순서</h2>
+      </div>
+      <div class="timeline">
+        <article class="glass step"><span>1</span><h3>업무 선정</h3><p>반복성 높고, 입력/출력 명확하며, 실패 비용이 낮은 업무부터 시작합니다.</p></article>
+        <article class="glass step"><span>2</span><h3>파일 기반 컨텍스트 구축</h3><p>프롬프트보다 표준 샘플, 정책 파일, 체크리스트, 예외 사례를 먼저 정리합니다.</p></article>
+        <article class="glass step"><span>3</span><h3>단일 에이전트 MVP</h3><p>멀티에이전트보다 단일 플로우에서 품질·비용·로그를 안정화합니다.</p></article>
+        <article class="glass step"><span>4</span><h3>도구 연결과 권한 분리</h3><p>읽기 도구부터 붙이고, 쓰기/전송은 승인 게이트 뒤에 둡니다.</p></article>
+        <article class="glass step"><span>5</span><h3>평가셋과 관측성</h3><p>성공/실패 샘플을 모아 회귀 테스트와 운영 로그를 구축합니다.</p></article>
+        <article class="glass step"><span>6</span><h3>운영 전환</h3><p>Owner, 장애 대응, 비용 한도, 변경관리, 보안 검토를 운영 프로세스에 편입합니다.</p></article>
+      </div>
+    </section>
+
+    <section class="shell checklist" id="checklist">
+      <div class="section-heading">
+        <p class="section-kicker">Enterprise Checklist</p>
+        <h2>출시 전 체크리스트</h2>
+      </div>
+      <div class="check-grid">
+        <div class="glass check-card"><h3>업무/제품</h3><label><input type="checkbox"> 업무 목표와 non-goal이 문서화되어 있다</label><label><input type="checkbox"> 성공 기준과 실패 기준이 수치화되어 있다</label><label><input type="checkbox"> 사용자에게 초안/확정/실행 상태가 구분된다</label><label><input type="checkbox"> 예외 케이스와 fallback 메시지가 있다</label></div>
+        <div class="glass check-card"><h3>데이터/컨텍스트</h3><label><input type="checkbox"> 참조 문서의 최신성과 우선순위가 정의되어 있다</label><label><input type="checkbox"> 민감정보 분류와 마스킹 정책이 있다</label><label><input type="checkbox"> RAG/파일 검색 결과가 로그에 남는다</label><label><input type="checkbox"> 샘플 입력/출력 평가셋이 있다</label></div>
+        <div class="glass check-card"><h3>도구/권한</h3><label><input type="checkbox"> 읽기/쓰기/삭제/전송 권한이 분리되어 있다</label><label><input type="checkbox"> 외부 발송과 데이터 변경은 승인 절차가 있다</label><label><input type="checkbox"> 도구 실패 시 재시도·중단 규칙이 있다</label><label><input type="checkbox"> dry-run 또는 preview 모드가 있다</label></div>
+        <div class="glass check-card"><h3>운영/거버넌스</h3><label><input type="checkbox"> trace id와 실행 로그가 남는다</label><label><input type="checkbox"> 비용 한도와 알림 기준이 있다</label><label><input type="checkbox"> 모델/프롬프트/도구 버전이 관리된다</label><label><input type="checkbox"> 장애 대응 Owner와 Runbook이 있다</label></div>
+      </div>
+    </section>
+
+    <section class="shell final-callout glass-strong">
+      <p class="section-kicker">Bottom Line</p>
+      <h2>기업 에이전트의 목표는 “자율성 극대화”가 아니라 “통제 가능한 자동화의 확장”입니다.</h2>
+      <p>처음부터 완전 자율 에이전트를 만들기보다, 업무 단위별로 컨텍스트와 권한을 패키징하고, 관측 가능한 실행 흐름을 구축해야 합니다. 그래야 PoC를 넘어 운영·통제·확산·성과로 이어집니다.</p>
+    </section>
+
+    <section class="shell sources" id="sources">
+      <div class="section-heading">
+        <p class="section-kicker">Sources & Design</p>
+        <h2>참고 출처와 디자인 적용</h2>
+      </div>
+      <div class="glass source-card">
+        <ul>
+          <li><a href="https://yozm.wishket.com/magazine/detail/3647" target="_blank" rel="noreferrer">요즘IT 3647 — 12분 49초 만에 한 달치 기획이 나왔다: 콘텐츠 AX 실험기</a></li>
+          <li><a href="https://yozm.wishket.com/magazine/detail/3695" target="_blank" rel="noreferrer">요즘IT 3695 — 콘텐츠 AX, ‘프롬프트’ 말고 ‘파일’을 보세요: 콘텐츠 AX 실험기 2</a></li>
+          <li><a href="https://yozm.wishket.com/magazine/detail/3739" target="_blank" rel="noreferrer">요즘IT 3739 — 두 달 꼬박 기업용 에이전트 만들며 배운 것: 콘텐츠 AX 실험기 3</a></li>
+          <li><a href="https://github.com/wapj/yozm-ai-agent" target="_blank" rel="noreferrer">wapj/yozm-ai-agent GitHub repository</a></li>
+          <li><a href="https://getdesign.md/design-md/ibm/DESIGN.md" target="_blank" rel="noreferrer">getdesign.md IBM DESIGN.md</a> — IBM 로고는 사용하지 않고, Carbon 계열의 엔터프라이즈 그리드/블루 팔레트만 참고했습니다.</li>
+        </ul>
+        <p class="note">주의: 실행 환경에서 요즘IT 원문 URL은 CloudFront 403으로 차단되어 원문 전문 추출은 실패했습니다. 본 문서는 검색 결과 제목, 공개 코드 저장소 구조, 엔터프라이즈 에이전트 개발 일반 원칙을 종합해 작성했으며, 직접 인용문은 사용하지 않았습니다.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell footer">
+    <p>Enterprise Agent Guide · Noto Sans KR · IBM-inspired glassmorphism · No IBM logo used</p>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
